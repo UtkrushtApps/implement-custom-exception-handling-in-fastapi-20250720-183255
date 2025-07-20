@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: hr_db
+      POSTGRES_USER: hr_user
+      POSTGRES_PASSWORD: hr_pass
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "hr_user"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://hr_user:hr_pass@db:5432/hr_db"
+    ports:
+      - "8000:8000"
